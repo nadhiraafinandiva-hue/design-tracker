@@ -754,6 +754,257 @@ const PRDS = {
         ]
       }
     ]
+  },
+
+  'product-catalogue': {
+    id: 'product-catalogue',
+    title: 'Product Catalogue',
+    eyebrow: 'Paper.id · RNG Squad 2 · Jun 2026',
+    description: 'Digital storefront for merchants — catalogue → order → auto SO/SI/PayIn on Paper.id rails. Phase 0 feature flag.',
+    color: '#97CC56',
+    owner: 'Afinandiva',
+    updated: 'June 25, 2026',
+    hasTracks: true,
+    stats: null,
+    framing: [
+      { cls:'red',    num:'Problem 1', title:'No self-serve buying experience',           body:'Customers rely entirely on offline channels (WhatsApp, phone) to browse products and place orders. No digital path from catalogue to confirmed order exists today.' },
+      { cls:'yellow', num:'Problem 2', title:'No lightweight order capture for merchants', body:'Merchants manage product lists outside Paper.id — spreadsheets, WhatsApp messages, printed price lists. No simple tool to share products and capture orders without requiring customers to create an account.' },
+      { cls:'blue',   num:'Problem 3', title:'Fragmented payment reconciliation',          body:'Payments are not automatically linked to their originating Sales Order and Invoice. Merchants manually create SO and SI after every order — causing delays, errors, and reconciliation overhead.' }
+    ],
+    tracks: [
+      { num:1, cls:'t1', title:'Merchant Catalogue &amp; Order flows', desc:'Screens inside the Paper.id merchant app — catalogue management, order creation (Flow A), incoming order review, and order list.',        timeline:'Flow A · Internal app' },
+      { num:2, cls:'t2', title:'Customer Storefront flows',             desc:'Public-facing screens — storefront page, cart, order submission, and payment states. No login required. Mobile-first.',                    timeline:'Flow B · Public URL' },
+      { num:3, cls:'t3', title:'System states &amp; shared patterns',   desc:'Auto-recon notifications, cross-flow error states, and shared component patterns that span both flows.',                                  timeline:'Both flows' }
+    ],
+    tasks: [
+      {
+        id:'pc-t1-1', track:1, priority:'p1', initialStatus:'todo',
+        title:'Product Catalogue module — list view, add/edit product form, storefront URL bar (A-1)',
+        chips:[
+          {cls:'impact-vh',text:'🔑 Core: Required for launch'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Dashboard → Product Catalogue (new left nav)'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'PRD A-1 context',cls:'',   desc:'Today, merchants manage product lists outside Paper.id — WhatsApp messages, spreadsheets, printed price lists. No product catalogue screen exists yet.'},
+          {stat:'Assets status',   cls:'red', desc:'Hi-Fi for merchant flow is "Not started" — this is the first screen being designed from scratch.'},
+          {stat:'A-1 AC 4',        cls:'',   desc:'Unique storefront URL auto-generated when the first product is saved. URL permanent per merchant. Copy CTA must be prominent.'}
+        ],
+        deliverables:[
+          'Empty state screen with "Add your first product" CTA',
+          'Product list view — image thumbnail, name, price, SKU, availability toggle, edit/delete actions',
+          'Add/edit product form — all fields with inline validation (price > 0, max chars, image max 5MB)',
+          'Delete confirmation modal',
+          'Storefront URL bar with copy CTA — appears after first product is saved',
+          'Left nav entry: "Product Catalogue" (new item in sidebar)'
+        ]
+      },
+      {
+        id:'pc-t1-2', track:1, priority:'p1', initialStatus:'todo',
+        title:'Create order on behalf of customer — product selection, cart, discount, fees, confirm (A-2)',
+        chips:[
+          {cls:'impact-vh',text:'🔑 Core: Flow A entry point'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Product Catalogue → Create Order'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'Problem 2',cls:'',   desc:'"Manual order-to-invoice workflows — Merchants manually create SO and SI after every order — causing delays, errors, and reconciliation overhead."'},
+          {stat:'A-2 AC 3',cls:'',   desc:'Discount: fixed IDR or % — not both simultaneously. Cannot exceed subtotal. Error: "Discount cannot exceed order subtotal"'},
+          {stat:'A-2 AC 6',cls:'red',desc:'Edge: price changes after adding to cart → notice: "Price for [Product Name] has been updated" — cart must re-validate on confirm'}
+        ],
+        deliverables:[
+          'Product search/browse view — search by name and SKU',
+          'Cart: product name, SKU, unit price, quantity stepper, line total, subtotal',
+          'Discount section — fixed IDR or % radio, input, validation (cannot exceed subtotal)',
+          'Custom fee rows — label + IDR amount, add/remove, all roll into grand total',
+          'Customer info form — Name (required) + WhatsApp number (required, validated format)',
+          'Final order summary before "Confirm Order" CTA',
+          'All error states: empty cart, invalid WA number, price change notice'
+        ]
+      },
+      {
+        id:'pc-t1-3', track:1, priority:'p2', initialStatus:'todo',
+        title:'Send order via WhatsApp / copy link — post-confirmation screen (A-3)',
+        chips:[
+          {cls:'impact-h',text:'Impact: High — primary distribution method'},
+          {cls:'effort-lo',text:'Effort: Low'},
+          {cls:'screen',text:'Screen: Order confirmation → Send / Copy options'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'A-3 AC 1',cls:'',   desc:'Opens wa.me with customer number pre-filled + pre-composed message: merchant name, order summary, unique order link. Merchant can edit before sending.'},
+          {stat:'North star',cls:'', desc:'This screen is the distribution mechanism for Flow A — if merchants don\'t send the link, the order-to-payment funnel breaks entirely.'},
+          {stat:'A-3 AC 5',cls:'red',desc:'WhatsApp not detected on device → fallback to Copy Link with notice: "WhatsApp not detected. Please copy the link and send manually"'}
+        ],
+        deliverables:[
+          'Post-confirmation screen: "Send via WhatsApp" primary CTA + "Copy Link" secondary',
+          'WA message preview — pre-composed with merchant name, order summary, and order link',
+          '"Copy Link" success toast: "Order link copied to clipboard"',
+          'WhatsApp-not-detected fallback state with copy-only CTA and instructional note'
+        ]
+      },
+      {
+        id:'pc-t1-4', track:1, priority:'p2', initialStatus:'todo',
+        title:'Incoming order review & confirm — notification, review screen, confirm/reject actions (A-4)',
+        chips:[
+          {cls:'impact-vh',text:'Impact: Very High — gates payment for all Flow B orders'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Notification → Order detail page'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'PRD scope',cls:'',   desc:'"The merchant confirms before any invoice or payment link is generated." — merchant confirmation is a hard gate, not optional.'},
+          {stat:'A-4 AC 1',cls:'',   desc:'Notification shows: customer name, phone number, items ordered, order total. Entry: in-app notification → order detail page.'},
+          {stat:'A-4 AC 5',cls:'red',desc:'Edge: merchant does not confirm within TBD hours → reminder notification sent. Suspended account → storefront shows "This catalogue is temporarily unavailable"'}
+        ],
+        deliverables:[
+          'In-app notification — customer name, items summary, total, "Review Order" CTA',
+          'Order review screen — full line items, customer notes, discount + fee adjustment controls',
+          'Confirm Order CTA → status transitions to "Awaiting Payment" and payment link auto-sent',
+          'Reject order action with confirmation modal',
+          'Reminder notification design (triggered after TBD hours with no action)',
+          'Suspended account state on public storefront URL'
+        ]
+      },
+      {
+        id:'pc-t1-5', track:1, priority:'p2', initialStatus:'todo',
+        title:'Order management list — all orders across Flow A &amp; B, status filters, order detail',
+        chips:[
+          {cls:'impact-h',text:'Impact: High — merchant ops hub'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Product Catalogue → Orders tab'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'A-4 AC 3',cls:'',desc:'"Order status in the merchant dashboard updates to Awaiting Payment" — implies a unified order list view for all incoming and created orders.'},
+          {stat:'A-5 AC 4',cls:'',desc:'"SO, SI, and PayIn appear in the merchant dashboard immediately after payment. Each document links to the related documents."'},
+          {stat:'A-5 AC 5',cls:'',desc:'Order status progression: Pending → Awaiting Payment → Paid / Cancelled — order list must reflect all states clearly'}
+        ],
+        deliverables:[
+          'Order list view — order ID, customer name, item count, total, status badge, timestamp',
+          'Status filter tabs: All / Pending / Awaiting Payment / Paid / Cancelled',
+          'Order detail page with linked SO / SI / PayIn document badges',
+          '"Resend link" action from order detail (re-triggers A-3 send flow)',
+          'Empty state per status filter'
+        ]
+      },
+      {
+        id:'pc-t2-1', track:2, priority:'p1', initialStatus:'todo',
+        title:'Storefront page — merchant branding, product grid, state handling (B-1)',
+        chips:[
+          {cls:'impact-vh',text:'🔑 Core: Customer entry point for Flow B'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Public storefront URL (no login required)'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'Problem 1',cls:'',   desc:'"No self-serve buying experience — customers rely entirely on offline channels (WhatsApp, phone) to browse products and place orders."'},
+          {stat:'B-1 AC 1',cls:'',   desc:'"Mobile-responsive, optimised for WhatsApp-referred traffic (majority on mobile)." — this is mobile-first by requirement, not preference.'},
+          {stat:'B-1 AC 4',cls:'red',desc:'Performance: page loads within 3 seconds on 4G mobile. Images are lazy-loaded to avoid blocking initial render.'}
+        ],
+        deliverables:[
+          'Storefront header — merchant business name + logo (placeholder if not set)',
+          'Product grid (mobile-first) — card: image, name, description, price (IDR thousands), unit, Add to Cart CTA',
+          'Paginated or infinite scroll for >20 products',
+          'Empty catalogue state: "This catalogue is currently empty. Please contact the seller"',
+          'Invalid/inactive URL state: "This catalogue is not available. Please contact the seller"',
+          'Suspended account state: "This catalogue is temporarily unavailable"'
+        ]
+      },
+      {
+        id:'pc-t2-2', track:2, priority:'p1', initialStatus:'todo',
+        title:'Cart & order review — add-to-cart, cart page, quantity management, edge cases (B-2)',
+        chips:[
+          {cls:'impact-vh',text:'🔑 Core: Converts browse to order intent'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Storefront → cart badge → cart review page'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'B-2 AC 1',cls:'',   desc:'Cart badge updates in real time. Customer can adjust quantities or remove items directly from the cart. Min qty: 1, max: 9,999.'},
+          {stat:'B-2 AC 2',cls:'',   desc:'Cart shows: product, image, unit price, quantity, line total; subtotal; merchant fees (read-only); grand total. Prices fixed — customer cannot modify.'},
+          {stat:'B-2 AC 3',cls:'red',desc:'Edge: product removed from catalogue while in cart → item flagged "No longer available"; customer must remove flagged items before submitting order'}
+        ],
+        deliverables:[
+          'Add-to-cart interaction — inline quantity stepper on product card',
+          'Floating cart badge with real-time item count',
+          'Cart review page — product rows, subtotal, read-only fee lines, grand total',
+          'Quantity adjustment + remove item controls in cart',
+          'Price-change notice: "[Product Name] has been updated. Please review your cart"',
+          '"No longer available" item state — flagged in cart with remove-to-continue prompt',
+          'Empty cart state: "Your cart is empty. Go back to browse products"'
+        ]
+      },
+      {
+        id:'pc-t2-3', track:2, priority:'p1', initialStatus:'todo',
+        title:'Order submission & payment states — form, post-submit waiting, payment success/fail/expired (B-3)',
+        chips:[
+          {cls:'impact-vh',text:'🔑 Core: End of funnel — maps to north star metric'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Cart → order form → waiting → payment'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'North star',cls:'',   desc:'"% of catalogue-originated orders that result in a completed payment within 48 hours" — B-3 is where this metric is won or lost.'},
+          {stat:'B-3 AC 1',cls:'',   desc:'"No login or OTP required — phone number is collected as part of the order form, not as an authentication step."'},
+          {stat:'B-3 AC 2',cls:'',   desc:'Post-submission: optional verify prompt "Verify your number to track this order" — one tap, skippable. Never required. Phone stored regardless.'},
+          {stat:'B-3 AC 6',cls:'red',desc:'Edge: browser closed before payment → order stays "Pending Payment"; customer can reopen via the order link at any time'}
+        ],
+        deliverables:[
+          'Order submission form — Name (required), Phone (required), Notes (optional, max 300 chars)',
+          'Final order summary before "Submit Order" CTA',
+          'Post-submission waiting screen: "Your order has been submitted. The merchant will review and confirm it shortly."',
+          'Optional OTP verify prompt — clearly skippable, non-blocking, appears once after submission',
+          'Payment page: success, failed (with retry CTA), expired link, already-paid states',
+          'Order link page — read-only order summary customer can return to anytime'
+        ]
+      },
+      {
+        id:'pc-t3-1', track:3, priority:'p2', initialStatus:'todo',
+        title:'Auto-recon notifications & dashboard updates — payment received, SO/SI/PayIn links (A-5)',
+        chips:[
+          {cls:'impact-h',text:'Impact: High — closes the reconciliation loop'},
+          {cls:'effort-lo',text:'Effort: Low'},
+          {cls:'screen',text:'Screen: Merchant dashboard — notification + document links'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'A-5 AC 5',cls:'',   desc:'"Payment received for Order #[ID] — [Name] paid IDR [AMOUNT]" — in-app + push/email notification per merchant preferences.'},
+          {stat:'A-5 AC 4',cls:'',   desc:'"SO, SI, and PayIn appear in the merchant dashboard immediately after payment. Each document links to the related documents." — linked document trail needs design.'},
+          {stat:'A-5 AC 6',cls:'red',desc:'Edge: document creation failure → payment still recorded; system retries 3×; merchant alerted if all retries fail. Failure state needs a design.'}
+        ],
+        deliverables:[
+          'In-app payment received notification — order ID, customer name, amount',
+          'SO/SI/PayIn linked document badges in order detail view',
+          'Auto-recon success state — order marked "Paid" with full document trail',
+          'Document creation failure alert — retry status indicator + support escalation CTA'
+        ]
+      },
+      {
+        id:'pc-t3-2', track:3, priority:'p3', initialStatus:'todo',
+        title:'Error & edge case state library — 20+ error messages across all 8 tickets',
+        chips:[
+          {cls:'impact-m',text:'Impact: Medium — consistency at highest-friction moments'},
+          {cls:'effort-md',text:'Effort: Medium'},
+          {cls:'screen',text:'Screen: Shared component library (spans all screens)'},
+          {cls:'compliance-none',text:'Compliance: None'}
+        ],
+        evidence:[
+          {stat:'PRD total',cls:'',   desc:'8 tickets define 20+ distinct error messages and edge case states. Currently no error design exists — Hi-Fi is "Not started" across both merchant and customer flows.'},
+          {stat:'Critical errors',cls:'red',desc:'A-3: WhatsApp not detected, invalid order link / B-2: product removed from cart / B-3: payment failed, gateway down, duplicate payment / A-5: document creation failure'},
+          {stat:'Design risk',cls:'', desc:'Without a shared error library, each screen risks inconsistent patterns — breaking user trust at the highest-friction moments in the flow'}
+        ],
+        deliverables:[
+          'Inline field error pattern (price = 0, invalid WA number, discount > subtotal)',
+          'Toast notification pattern (copy success, price updated, cart item warning)',
+          'Full-page error states (invalid storefront URL, cancelled order, payment gateway down)',
+          'Modal confirmation pattern (delete product, reject order, confirm actions)',
+          'Complete error message copy audit across all 8 PRD tickets'
+        ]
+      }
+    ]
   }
 };
 
