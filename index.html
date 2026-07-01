@@ -311,6 +311,113 @@
     .sync-pill.dark-bg .sync-dot { background: rgba(255,255,255,0.5); }
     @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
+    /* ─── ADD PRD BUTTON ────────────────────────────────────────── */
+    .add-prd-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 20px;
+      border-radius: var(--radius-full);
+      border: 2px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .add-prd-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.6); }
+
+    /* ─── MODAL ─────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .modal-header {
+      background: linear-gradient(135deg, #001F3F 0%, #133F5D 100%);
+      padding: 24px 28px 20px;
+      color: white;
+    }
+    .modal-header-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 6px;
+    }
+    .modal-header-title {
+      font-family: 'Lato', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    .modal-header-title span { color: #97CC56; }
+    .modal-body { padding: 24px 28px 28px; }
+    .modal-body p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px; }
+    .modal-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+    .modal-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .modal-step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+      color: white;
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .modal-step-text { font-size: 13px; color: var(--text-body); line-height: 1.5; }
+    .modal-step-text strong { color: var(--text-primary); font-weight: 700; }
+    .modal-formats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .modal-format-chip {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      background: var(--bg-page);
+    }
+    .modal-close {
+      width: 100%;
+      padding: 11px;
+      background: var(--brand-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+    .modal-close:hover { background: #2980b9; }
+
     /* ─── MOBILE ─────────────────────────────────────────────────── */
     @media (max-width: 768px) {
       .home-nav { padding: 20px 20px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -779,9 +886,48 @@ function renderHome() {
         <div class="home-nav-eyebrow">Paper.id · Product Design</div>
         <div class="home-nav-title">Design <span>Tracker</span></div>
       </div>
-      <div class="sync-pill dark-bg" id="sync-pill"><span class="sync-dot"></span><span id="sync-label">…</span></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="add-prd-btn" onclick="openAddPrdModal()">＋ Add PRD</button>
+        <div class="sync-pill dark-bg" id="sync-pill"><span class="sync-dot"></span><span id="sync-label">…</span></div>
+      </div>
     </div>
-    <div class="prd-grid">${cards}</div>`;
+    <div class="prd-grid">${cards}</div>
+
+    <!-- ADD PRD MODAL -->
+    <div class="modal-overlay hidden" id="add-prd-modal" onclick="closeAddPrdModal(event)">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-header-eyebrow">New Project</div>
+          <div class="modal-header-title">Add a <span>PRD</span></div>
+        </div>
+        <div class="modal-body">
+          <p>Share your PRD or research report with Claude in the chat. Claude will analyze it, identify UX/UI problems, break them into prioritized tasks with evidence, and add a new project card here automatically.</p>
+          <div class="modal-steps">
+            <div class="modal-step">
+              <div class="modal-step-num">1</div>
+              <div class="modal-step-text"><strong>Share the document</strong> — paste text, attach a file, or drop an HTML report into the Claude chat.</div>
+            </div>
+            <div class="modal-step">
+              <div class="modal-step-num">2</div>
+              <div class="modal-step-text"><strong>Claude analyzes it</strong> — identifies design problems, maps evidence, assigns priority (P1–P3), and separates tracks if needed.</div>
+            </div>
+            <div class="modal-step">
+              <div class="modal-step-num">3</div>
+              <div class="modal-step-text"><strong>New card appears here</strong> — Claude updates the tracker code and pushes to GitHub. Refresh this page and it's live.</div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-xs);margin-bottom:8px">Accepted formats</div>
+          <div class="modal-formats">
+            <span class="modal-format-chip">HTML report</span>
+            <span class="modal-format-chip">PDF</span>
+            <span class="modal-format-chip">Paste text</span>
+            <span class="modal-format-chip">Figma link</span>
+            <span class="modal-format-chip">Google Doc link</span>
+          </div>
+          <button class="modal-close" onclick="closeAddPrdModal()">Got it — I'll share my PRD in the chat</button>
+        </div>
+      </div>
+    </div>`;
 
   setSyncStatus(FIREBASE_URL ? 'synced' : 'local', FIREBASE_URL ? 'Synced ✓' : 'Local only');
 }
@@ -1113,6 +1259,17 @@ function applyStateToDom(prdId) {
     if (btn) { btn.className = 'status-btn ' + next; btn.textContent = STATUS_LABELS[next]; }
   });
   updateProgress(prdId);
+}
+
+// ─── ADD PRD MODAL ───────────────────────────────────────────────────
+function openAddPrdModal() {
+  const m = document.getElementById('add-prd-modal');
+  if (m) m.classList.remove('hidden');
+}
+function closeAddPrdModal(e) {
+  if (e && e.target !== document.getElementById('add-prd-modal')) return;
+  const m = document.getElementById('add-prd-modal');
+  if (m) m.classList.add('hidden');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────
